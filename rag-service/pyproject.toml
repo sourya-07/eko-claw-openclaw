@@ -1,0 +1,13 @@
+[project]
+name = "eko-claw-rag-service"
+version = "0.1.0"
+description = "Local offline-capable Python FastAPI RAG service using ChromaDB and local sentence-transformers"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.28.0",
+    "chromadb>=0.4.24",
+    "sentence-transformers>=2.5.1",
+    "pydantic>=2.6.4",
+    "langchain-text-splitters>=0.2.0"
+]
