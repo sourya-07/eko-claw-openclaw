@@ -1,0 +1,25 @@
+{
+  "agents": {
+    "defaults": {
+      "provider": "google",
+      "model": "gemini-2.5-flash",
+      "workspace": "./openclaw-workspace"
+    }
+  },
+  "mcp": {
+    "servers": {
+      "eko-claw-tools": {
+        "command": "node",
+        "args": ["./mcp-server/dist/index.js"]
+      }
+    }
+  },
+  "tools": {
+    "profile": "coding",
+    "sandbox": {
+      "tools": {
+        "alsoAllow": ["bundle-mcp"]
+      }
+    }
+  }
+}
