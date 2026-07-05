@@ -1,0 +1,24 @@
+{
+  "name": "eko-claw-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server exposing support tools for the Eko Claw OpenClaw agent",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "better-sqlite3": "^11.8.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}
