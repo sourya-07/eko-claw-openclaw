@@ -196,9 +196,10 @@ def db_escalate_ticket(query: str, severity: str, reason: str, ticket_id: str = 
         else:
             cursor.execute("""
                 UPDATE tickets 
-                SET status = 'ESCALATED', assigned_to = ?, escalation_note = ?, updated_at = ?, resolved_at = NULL
+                SET status = 'ESCALATED', severity = ?, assigned_to = ?, escalation_note = ?, updated_at = ?, resolved_at = NULL
                 WHERE ticket_id = ?
-            """, (matrix_entry['assigned_to'], escalation_note, escalated_at, final_ticket_id))
+            """, (severity, matrix_entry['assigned_to'], escalation_note, escalated_at, final_ticket_id))
+
             
         conn.commit()
         

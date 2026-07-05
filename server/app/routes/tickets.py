@@ -135,7 +135,22 @@ def resolve_ticket(ticket_id: str):
             SET status = 'RESOLVED', resolved_at = ?, updated_at = ?
             WHERE ticket_id = ?
         """, (now_iso, now_iso, ticket_id))
+        
+        # Cross-resolve linked anomaly if present in escalation_note
+        escalation_note = ticket['escalation_note']
+        if escalation_note and "Linked Anomaly:" in escalation_note:
+            import re
+            match = re.search(r"Linked Anomaly:\s*([A-Za-z0-9-]+)", escalation_note)
+            if match:
+                anomaly_id = match.group(1)
+                cursor.execute("""
+                    UPDATE anomalies 
+                    SET status = 'RESOLVED' 
+                    WHERE anomaly_id = ?
+                """, (anomaly_id,))
+                
         conn.commit()
+
         
         cursor.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,))
         row = cursor.fetchone()
