@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import SeverityBadge from '../anomalies/SeverityBadge';
-import { X, User, Calendar, ShieldAlert, ArrowUpRight, CheckCircle } from 'lucide-react';
+import { X, User, Calendar, ShieldAlert, ArrowUpRight, CheckCircle, Clock } from 'lucide-react';
 
-const TicketDetail = ({ ticket, onClose, onEscalate, onResolve }) => {
+const TicketDetail = ({ ticket, onClose, onEscalate, onResolve, onStartWorking }) => {
   const [escalationReason, setEscalationReason] = useState('');
   const [escalationSeverity, setEscalationSeverity] = useState(ticket.severity || 'HIGH');
   const [showEscalateForm, setShowEscalateForm] = useState(false);
@@ -101,21 +101,32 @@ const TicketDetail = ({ ticket, onClose, onEscalate, onResolve }) => {
         {ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' && (
           <div className="pt-4 border-t border-slate-800 space-y-4">
             {!showEscalateForm ? (
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowEscalateForm(true)}
-                  className="flex-1 px-4 py-2.5 text-xs font-bold text-white bg-red-950/40 hover:bg-red-950/60 rounded-xl border border-red-500/20 hover:border-red-500/40 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <ArrowUpRight className="w-4 h-4 text-red-500" />
-                  Escalate Support Ticket
-                </button>
-                <button
-                  onClick={() => onResolve(ticket.ticket_id)}
-                  className="flex-1 px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/20"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Mark Resolved
-                </button>
+              <div className="flex flex-col gap-3">
+                {ticket.status === 'OPEN' && (
+                  <button
+                    onClick={() => onStartWorking(ticket.ticket_id)}
+                    className="w-full px-4 py-2.5 text-xs font-bold text-white bg-yellow-600 hover:bg-yellow-500 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-yellow-950/20"
+                  >
+                    <Clock className="w-4 h-4" />
+                    Start Progress / Accept Ticket
+                  </button>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowEscalateForm(true)}
+                    className="flex-1 px-4 py-2.5 text-xs font-bold text-white bg-red-950/40 hover:bg-red-950/60 rounded-xl border border-red-500/20 hover:border-red-500/40 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <ArrowUpRight className="w-4 h-4 text-red-500" />
+                    Escalate Support Ticket
+                  </button>
+                  <button
+                    onClick={() => onResolve(ticket.ticket_id)}
+                    className="flex-1 px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/20"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Mark Resolved
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleEscalateSubmit} className="bg-slate-800/15 border border-slate-850 p-4 rounded-xl space-y-4">

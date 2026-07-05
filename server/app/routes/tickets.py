@@ -150,3 +150,36 @@ def resolve_ticket(ticket_id: str):
         cursor.close()
         conn.close()
 
+@router.post("/{ticket_id}/inprogress", response_model=TicketResponse)
+def set_ticket_inprogress(ticket_id: str):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,))
+        ticket = cursor.fetchone()
+        if not ticket:
+            raise HTTPException(status_code=404, detail=f"Ticket {ticket_id} not found.")
+            
+        now_iso = datetime.now(timezone.utc).isoformat()
+        cursor.execute("""
+            UPDATE tickets 
+            SET status = 'IN_PROGRESS', updated_at = ?
+            WHERE ticket_id = ?
+        """, (now_iso, ticket_id))
+        conn.commit()
+        
+        cursor.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,))
+        row = cursor.fetchone()
+        return dict(row)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to set ticket in progress: {str(e)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+

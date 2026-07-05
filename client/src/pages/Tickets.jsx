@@ -63,6 +63,19 @@ const Tickets = () => {
     }
   };
 
+  const handleStartWorking = async (ticketId) => {
+    try {
+      const res = await client.post(`/api/tickets/${ticketId}/inprogress`);
+      setTickets((prev) =>
+        prev.map((t) => (t.ticket_id === ticketId ? res.data : t))
+      );
+      setSelectedTicket(res.data);
+    } catch (err) {
+      console.error("Failed to start progress on ticket:", err);
+      alert("Failed to move ticket to In Progress. Please verify connection.");
+    }
+  };
+
   const filteredTickets = tickets.filter((t) => {
     const queryLower = t.query.toLowerCase();
     const idLower = t.ticket_id.toLowerCase();
@@ -138,6 +151,7 @@ const Tickets = () => {
             onClose={() => setSelectedTicket(null)}
             onEscalate={handleEscalateTicket}
             onResolve={handleResolveTicket}
+            onStartWorking={handleStartWorking}
           />
         </>
       )}
