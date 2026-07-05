@@ -10,23 +10,50 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 CHROMA_DIR = os.path.join(BASE_DIR, "data", "chroma_store")
 KNOWLEDGE_BASE_DIR = os.path.join(BASE_DIR, "data", "knowledge_base")
 
-# Global variables for lazy loading
-_model = None
-_model_lock = threading.Lock()
+def get_embedding(text: str, task_type: str = "retrieval_query") -> List[float]:
+    """
+    Retrieves embedding vector from Gemini API.
+    """
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        print("Warning: GOOGLE_API_KEY not found. Generating dummy embedding.")
+        return [0.0] * 768
+        
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            contents=text,
+            task_type=task_type
+        )
+        return result['embedding']
+    except Exception as e:
+        print(f"Embedding API call failed: {e}")
+        return [0.0] * 768
 
-def get_embedding_model():
+def get_embeddings_batch(texts: List[str]) -> List[List[float]]:
     """
-    Lazily and thread-safely loads the sentence-transformers model.
+    Retrieves embeddings in batch from Gemini API.
     """
-    global _model
-    if _model is None:
-        with _model_lock:
-            if _model is None:
-                print("Loading sentence-transformers/all-MiniLM-L6-v2 model (lazy-loaded)...")
-                from sentence_transformers import SentenceTransformer
-                _model = SentenceTransformer("all-MiniLM-L6-v2")
-                print("Model loaded successfully.")
-    return _model
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        print("Warning: GOOGLE_API_KEY not found. Generating dummy embeddings batch.")
+        return [[0.0] * 768 for _ in range(len(texts))]
+        
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            contents=texts,
+            task_type="retrieval_document"
+        )
+        return result['embedding']
+    except Exception as e:
+        print(f"Batch embedding API call failed: {e}")
+        return [[0.0] * 768 for _ in range(len(texts))]
+
 
 def get_chroma_collection():
     """
@@ -83,11 +110,10 @@ def search_kb(query: str) -> Dict[str, Any]:
         return {"chunks": [], "confidence_score": 0.0}
 
     try:
-        model = get_embedding_model()
         _, collection = get_chroma_collection()
         
-        # Generate embedding locally
-        query_embedding = model.encode(query).tolist()
+        # Generate embedding via Gemini API
+        query_embedding = get_embedding(query, task_type="retrieval_query")
 
         # Query local vector store
         results = collection.query(
@@ -166,9 +192,8 @@ def ingest_kb() -> Dict[str, Any]:
             metadata={"hnsw:space": "cosine"}
         )
 
-        model = get_embedding_model()
         documents = [c["content"] for c in all_chunks]
-        embeddings = model.encode(documents).tolist()
+        embeddings = get_embeddings_batch(documents)
         metadatas = [c["metadata"] for c in all_chunks]
         ids = [f"chunk_{i}" for i in range(len(all_chunks))]
 
